@@ -19,13 +19,13 @@ class Settings(BaseSettings):
     PORT: int = 8000
 
     # CORS Whitelist (comma-separated strings)
-    ALLOWED_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000"
+    ALLOWED_ORIGINS: str = "http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000,http://127.0.0.1:3000"
 
     # Assistant Identity
     ASSISTANT_NAME: str = "AI Knowledge Assistant"
 
     # RAG Knowledge Base Configuration
-    KNOWLEDGE_BASE_PATH: str = "knowledge/documents"
+    KNOWLEDGE_BASE_PATH: str = "knowledge"
     RAG_TOP_K: int = 3
     RAG_CHUNK_SIZE: int = 600
     RAG_CHUNK_OVERLAP: int = 100
@@ -74,8 +74,8 @@ class Settings(BaseSettings):
         if p.is_absolute() and p.exists():
             return str(p)
 
-        # Resolve relative to starter project root (app/../knowledge/documents)
-        project_root = Path(__file__).resolve().parent.parent.parent
+        # Resolve relative to actual project root, not src/
+        project_root = Path(__file__).resolve().parents[3]
         candidate = project_root / p
         if candidate.exists():
             return str(candidate)

@@ -19,7 +19,7 @@ class RAGPipeline:
 
     def __init__(
         self,
-        knowledge_dir: str = "knowledge/documents",
+        knowledge_dir: str = "knowledge",
         vector_store: BaseVectorStore = None,
         top_k: int = 3,
         chunk_size: int = 600,

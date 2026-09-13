@@ -30,13 +30,14 @@ async def test_root():
 
 @pytest.mark.asyncio
 async def test_health():
-    """Test health check endpoint."""
+    """Test health check endpoint for the gateway-only application mode."""
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         response = await client.get("/health")
         assert response.status_code == 200
         data = response.json()
         assert data["status"] == "healthy"
-        assert "rag_index" in data
+        assert "knowledge_index" in data
+        assert data["knowledge_index"]["disabled"] is True
         assert "gateway" in data
 
 
@@ -70,8 +71,22 @@ async def test_chat_conversational_canned():
 
 
 @pytest.mark.asyncio
+async def test_chat_stream_conversational_canned():
+    """Test the streaming endpoint emits SSE delta and completion events."""
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        payload = {"messages": [{"role": "user", "content": "Hello!"}]}
+        response = await client.post("/api/chat/stream", json=payload)
+
+        assert response.status_code == 200
+        assert response.headers["content-type"].startswith("text/event-stream")
+        assert '"type": "delta"' in response.text
+        assert '"type": "done"' in response.text
+        assert '"provider": "canned_response"' in response.text
+
+
+@pytest.mark.asyncio
 async def test_chat_domain_query_via_gateway():
-    """Test POST /api/chat with technical query retrieves context and routes to gateway."""
+    """Test POST /api/chat with a technical query routes directly to the gateway without document retrieval."""
     mock_return = (
         "Apex Cloud API requests are authenticated by passing your API key in the Authorization header.",
         "Primary Mock Provider",
@@ -91,5 +106,5 @@ async def test_chat_domain_query_via_gateway():
             assert data["provider"] == "Primary Mock Provider"
             assert data["model"] == "mock-model"
             assert data["usage"]["total_tokens"] == 60
-            assert len(data["sources"]) >= 1
+            assert data["sources"] == []
             mock_gen.assert_called_once()

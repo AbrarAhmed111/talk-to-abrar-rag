@@ -12,9 +12,12 @@ Handles:
 
 import time
 import logging
-from typing import List, Optional, Tuple, Dict
+import sys
+from typing import AsyncIterator, List, Optional, Tuple, Dict
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import BaseMessage
+
+sys.modules.setdefault("app.gateway.gateway", sys.modules[__name__])
 
 from .deployment import ProviderDeployment
 from .error_classifier import ErrorClassifier
@@ -287,6 +290,114 @@ class LLMGateway:
 
         # If all attempts exhausted
         logger.error(f"❌ All LLM provider attempts failed after {attempts} attempts. Last error: {str(last_error)}")
+        raise RuntimeError(
+            f"All LLM providers are currently unavailable or in cooldown. Last error: {str(last_error)}"
+        )
+
+    async def stream_generate(
+        self,
+        messages: List[BaseMessage],
+        temperature: Optional[float] = 0.7,
+        max_tokens: Optional[int] = None,
+    ) -> AsyncIterator[Dict]:
+        """Streams provider output with the same ordered fallback behavior as generate."""
+        available = self.get_available_deployments()
+        if not available:
+            active = [d for d in self.deployments if not d.is_permanently_disabled]
+            if not active:
+                raise RuntimeError("No LLM provider deployments configured or available.")
+            active.sort(key=lambda d: d.cooldown_until)
+            available = [active[0]]
+
+        status_events: List[ProviderStatusEvent] = []
+        attempts = 0
+        last_error = None
+
+        for deployment in available:
+            if attempts >= self.max_attempts:
+                break
+            attempts += 1
+
+            try:
+                logger.info(
+                    f"🌐 Streaming from Cloud LLM Provider: {deployment.name} ({deployment.default_model}) "
+                    f"[Attempt {attempts}/{self.max_attempts}]..."
+                )
+                llm = ChatOpenAI(
+                    api_key=deployment.api_key,
+                    base_url=deployment.base_url,
+                    model=deployment.default_model,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                    timeout=30.0,
+                )
+
+                content_parts = []
+                async for chunk in llm.astream(messages):
+                    content = chunk.content
+                    if isinstance(content, list):
+                        content = "".join(
+                            str(part.get("text", "")) if isinstance(part, dict) else str(part)
+                            for part in content
+                        )
+                    if content:
+                        content = str(content)
+                        content_parts.append(content)
+                        yield {"type": "delta", "content": content}
+
+                if len(status_events) > 0:
+                    status_events.append(
+                        ProviderStatusEvent(
+                            type="provider_status",
+                            status="switched",
+                            message=f"Switched to {deployment.name} successfully.",
+                            provider=deployment.name,
+                        )
+                    )
+
+                yield {
+                    "type": "done",
+                    "reply": "".join(content_parts),
+                    "provider": deployment.name,
+                    "model": deployment.default_model,
+                    "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0},
+                    "status_events": status_events,
+                }
+                return
+
+            except Exception as e:
+                last_error = e
+                is_retryable, reason = ErrorClassifier.is_retryable(e)
+                if not is_retryable:
+                    if reason == "invalid_api_key":
+                        deployment.mark_disabled()
+                    else:
+                        raise
+                elif reason == "model_or_endpoint_not_found":
+                    deployment.mark_disabled()
+                else:
+                    deployment.mark_cooldown(self.cooldown_seconds)
+
+                message = (
+                    f"{deployment.name} model '{deployment.default_model}' is unavailable. Switching to another provider..."
+                    if reason == "model_or_endpoint_not_found"
+                    else f"{deployment.name} has reached its API limit or is unavailable. Switching to another provider..."
+                )
+                status_events.append(
+                    ProviderStatusEvent(
+                        type="provider_status",
+                        status="fallback",
+                        message=message,
+                        provider=deployment.name,
+                    )
+                )
+                yield {
+                    "type": "status",
+                    "status": "fallback",
+                    "message": message,
+                    "provider": deployment.name,
+                }
+
         raise RuntimeError(
             f"All LLM providers are currently unavailable or in cooldown. Last error: {str(last_error)}"
         )

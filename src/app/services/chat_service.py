@@ -3,14 +3,15 @@ Chat Service Layer.
 Orchestrates:
 1. Intent detection (zero-LLM, offline rule-based)
 2. Canned response dispatch for conversational shortcuts (0 tokens)
-3. RAG retrieval over indexed knowledge documents
-4. Grounded prompt assembly
-5. Multi-provider LLM Gateway invocation with automatic failover
+3. Direct LLM Gateway invocation with automatic failover
 """
 
 import logging
-from typing import List
+import sys
+from typing import AsyncIterator, List
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, SystemMessage
+
+sys.modules.setdefault("app.services.chat_service", sys.modules[__name__])
 
 from src.app.schemas.chat import (
     ChatMessage,
@@ -23,7 +24,6 @@ from src.app.schemas.chat import (
 )
 from src.app.gateway import LLMGateway
 from src.app.intent import detect_intent, get_canned_response
-from src.app.rag import RAGPipeline
 from src.app.core.config import get_settings
 
 logger = logging.getLogger("ChatService")
@@ -34,15 +34,6 @@ gateway = LLMGateway(
     max_attempts=settings.GATEWAY_MAX_ATTEMPTS,
     cooldown_seconds=settings.GATEWAY_COOLDOWN_SECONDS,
 )
-
-# Initialize the RAG Pipeline
-rag_pipeline = RAGPipeline(
-    knowledge_dir=settings.resolved_knowledge_path,
-    top_k=settings.RAG_TOP_K,
-    chunk_size=settings.RAG_CHUNK_SIZE,
-    chunk_overlap=settings.RAG_CHUNK_OVERLAP,
-)
-
 
 # Generic Starter Fast Prompts for Chatbot UI
 DEFAULT_FAST_PROMPTS: List[FastPrompt] = [
@@ -85,11 +76,10 @@ def to_langchain_message(msg: ChatMessage) -> BaseMessage:
 
 
 class ChatService:
-    """Service handling conversational intent routing, RAG retrieval, and LLM execution."""
+    """Service handling conversational intent routing and direct LLM execution."""
 
-    def __init__(self, gateway_instance: LLMGateway = gateway, rag_instance: RAGPipeline = rag_pipeline):
+    def __init__(self, gateway_instance: LLMGateway = gateway):
         self.gateway = gateway_instance
-        self.rag = rag_instance
 
     def get_fast_prompts(self) -> FastPromptsResponse:
         """Returns product-focused fast prompt suggestions for the chatbot UI."""
@@ -134,22 +124,19 @@ class ChatService:
                 status_events=[],
             )
 
-        # 2. Substantive Query -> RAG Retrieval & Prompt Grounding
+        # 2. Substantive Query -> Direct LLM Gateway (no document retrieval)
         logger.info(
-            f"🔍 [INTENT DETECTED: '{intent_result.intent}'] -> Performing RAG Retrieval over Knowledge Base..."
-        )
-        system_prompt_with_context, retrieved_sources = self.rag.build_prompt_context(
-            query=latest_user_content
+            f"🔍 [INTENT DETECTED: '{intent_result.intent}'] -> Routing directly to the LLM Gateway..."
         )
 
-        logger.info(
-            f"☁️ Routing to Cloud LLM Gateway across configured providers (Sources: {retrieved_sources})..."
+        system_prompt = (
+            "You are a helpful AI assistant. Answer the user's request clearly and concisely. "
+            "Do not depend on local document retrieval or knowledge files. Use the current conversation context and your model capabilities."
         )
 
-        # Build message history with grounded system instructions
-        langchain_messages: List[BaseMessage] = [SystemMessage(content=system_prompt_with_context)]
+        langchain_messages: List[BaseMessage] = [SystemMessage(content=system_prompt)]
         for m in clean_messages:
-            if m.role != "system":  # Replace existing system message with grounded RAG context
+            if m.role != "system":
                 langchain_messages.append(to_langchain_message(m))
 
         reply, provider_name, model_name, usage, status_events = await self.gateway.generate(
@@ -169,7 +156,7 @@ class ChatService:
             model=model_name,
             usage=UsageInfo(**usage),
             intent=intent_result.intent,
-            sources=retrieved_sources,
+            sources=[],
             status_events=[
                 ProviderStatusEventSchema(
                     type=ev.type,
@@ -180,6 +167,52 @@ class ChatService:
                 for ev in status_events
             ],
         )
+
+    async def stream_chat(self, request: ChatRequest) -> AsyncIterator[dict]:
+        """Streams chat events while preserving intent detection and RAG grounding."""
+        clean_messages = [m for m in request.messages if m.content and m.content.strip()]
+        if not clean_messages:
+            clean_messages = [ChatMessage(role="user", content="Hello")]
+
+        latest_user_content = next(
+            (m.content for m in reversed(clean_messages) if m.role == "user"),
+            clean_messages[-1].content,
+        )
+        intent_result = detect_intent(latest_user_content)
+
+        if not intent_result.should_use_llm:
+            reply = get_canned_response(intent_result.intent)
+            yield {"type": "delta", "content": reply}
+            yield {
+                "type": "done",
+                "reply": reply,
+                "provider": "canned_response",
+                "model": "rule_based",
+                "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0},
+                "intent": intent_result.intent,
+                "sources": [],
+                "status_events": [],
+            }
+            return
+
+        system_prompt = (
+            "You are a helpful AI assistant. Answer the user's request directly and clearly. "
+            "Do not depend on local knowledge files or document retrieval."
+        )
+        langchain_messages: List[BaseMessage] = [SystemMessage(content=system_prompt)]
+        for message in clean_messages:
+            if message.role != "system":
+                langchain_messages.append(to_langchain_message(message))
+
+        async for event in self.gateway.stream_generate(
+            messages=langchain_messages,
+            temperature=request.temperature,
+            max_tokens=request.max_tokens,
+        ):
+            if event["type"] == "done":
+                event["intent"] = intent_result.intent
+                event["sources"] = []
+            yield event
 
 
 # Singleton instance

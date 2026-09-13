@@ -33,13 +33,13 @@ from .types import (
 
 CANNED_RESPONSES: Dict[str, str] = {
     INTENT_GREETING: (
-        "Hello! I am your AI Knowledge Assistant. How can I assist you with our platform and documentation today?"
+        "Hello! I’m Abrar Ahmed’s AI assistant. I can help you learn about his background, projects, skills, and developer journey. How can I help?"
     ),
     INTENT_WELLBEING: (
-        "I'm doing great, thank you for asking! I'm ready to answer any questions about our products, documentation, or services. How can I help?"
+        "I’m doing great, thank you for asking! I’m here to help with Abrar Ahmed’s profile, work, projects, and technical background. What would you like to know?"
     ),
     INTENT_BOT_IDENTITY: (
-        "I am an AI Knowledge and Support Assistant. I help users navigate documentation, answer technical questions, and explain platform features."
+        "I am Abrar Ahmed’s AI assistant, designed to answer questions about his experience, full-stack engineering work, AI projects, DevAbby brand, and portfolio. You can explore his background and work at https://abrarahmed.pro."
     ),
     INTENT_COMPLIMENT: (
         "Thank you! I'm happy to help. Let me know if you have any questions about our platform or documentation."
@@ -79,11 +79,11 @@ CANNED_RESPONSES: Dict[str, str] = {
     ),
     INTENT_CAPABILITY_HELP: (
         "I can help you with:\n"
-        "• Explaining product features and architecture\n"
-        "• Searching and answering questions from documentation\n"
-        "• API reference, authentication, and integration guides\n"
-        "• Pricing plans, limits, and troubleshooting\n\n"
-        "What would you like assistance with?"
+        "• Abrar Ahmed’s background, experience, and education\n"
+        "• Full-stack engineering, AI, and product development work\n"
+        "• DevAbby projects, portfolio, and professional identity\n"
+        "• Technical skills, leadership background, and mentoring experience\n\n"
+        "What would you like to know about Abrar or his work?"
     ),
 }
 
