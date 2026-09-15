@@ -15,7 +15,7 @@ logger = logging.getLogger("RAGLoader")
 class DocumentLoader:
     """Loads and chunks documentation files from a local directory."""
 
-    def __init__(self, directory_path: str, chunk_size: int = 600, chunk_overlap: int = 100):
+    def __init__(self, directory_path: str, chunk_size: int = 700, chunk_overlap: int = 120):
         self.directory_path = directory_path
         self.splitter = MarkdownTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
 
@@ -31,9 +31,11 @@ class DocumentLoader:
 
         for root, _, files in os.walk(self.directory_path):
             for file in files:
-                if file.endswith((".md", ".txt")):
+                if file.endswith((".md", ".txt")) and file != "README.md":
                     file_path = os.path.join(root, file)
-                    rel_path = os.path.relpath(file_path, self.directory_path)
+                    # Use forward slashes for the source path so citations are
+                    # identical whether ingestion runs on Windows or Linux.
+                    rel_path = os.path.relpath(file_path, self.directory_path).replace(os.sep, "/")
                     try:
                         with open(file_path, "r", encoding="utf-8", errors="replace") as f:
                             content = f.read()

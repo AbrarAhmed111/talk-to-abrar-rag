@@ -22,8 +22,8 @@ class RAGPipeline:
         knowledge_dir: str = "knowledge",
         vector_store: BaseVectorStore = None,
         top_k: int = 3,
-        chunk_size: int = 600,
-        chunk_overlap: int = 100,
+        chunk_size: int = 700,
+        chunk_overlap: int = 120,
     ):
         self.knowledge_dir = knowledge_dir
         self.top_k = top_k

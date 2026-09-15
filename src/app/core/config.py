@@ -27,8 +27,8 @@ class Settings(BaseSettings):
     # RAG Knowledge Base Configuration
     KNOWLEDGE_BASE_PATH: str = "knowledge"
     RAG_TOP_K: int = 3
-    RAG_CHUNK_SIZE: int = 600
-    RAG_CHUNK_OVERLAP: int = 100
+    RAG_CHUNK_SIZE: int = 700
+    RAG_CHUNK_OVERLAP: int = 120
 
     # Gateway Default Settings
     GATEWAY_MAX_ATTEMPTS: int = 10
