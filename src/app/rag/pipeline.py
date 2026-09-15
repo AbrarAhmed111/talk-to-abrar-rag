@@ -8,7 +8,7 @@ from typing import List, Tuple
 from src.app.core.config import get_settings
 from src.app.schemas.rag import RetrievalResult
 from src.app.rag.ingestion.loader import DocumentLoader
-from src.app.rag.retrieval.vector_store import InMemoryHybridVectorStore, BaseVectorStore
+from src.app.rag.retrieval.vector_store import InMemoryBM25VectorStore, BaseVectorStore
 from src.app.rag.context.builder import ContextBuilder
 
 logger = logging.getLogger("RAGPipeline")
@@ -27,7 +27,7 @@ class RAGPipeline:
     ):
         self.knowledge_dir = knowledge_dir
         self.top_k = top_k
-        self.vector_store = vector_store or InMemoryHybridVectorStore()
+        self.vector_store = vector_store or InMemoryBM25VectorStore()
         self.loader = DocumentLoader(
             directory_path=knowledge_dir,
             chunk_size=chunk_size,

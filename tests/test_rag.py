@@ -7,7 +7,7 @@ import os
 import pytest
 from src.app.rag.chunking.text_splitter import MarkdownTextSplitter
 from src.app.rag.ingestion.loader import DocumentLoader
-from src.app.rag.retrieval.vector_store import InMemoryHybridVectorStore
+from src.app.rag.retrieval.vector_store import InMemoryBM25VectorStore
 from src.app.rag.context.builder import ContextBuilder
 from src.app.rag.pipeline import RAGPipeline
 from src.app.schemas.rag import DocumentChunk
@@ -39,7 +39,7 @@ def test_markdown_text_splitter():
 
 def test_in_memory_vector_store_retrieval():
     """Verify BM25 retrieval finds relevant chunks and orders by score."""
-    store = InMemoryHybridVectorStore()
+    store = InMemoryBM25VectorStore()
     chunks = [
         DocumentChunk(
             chunk_id="1",
@@ -70,7 +70,10 @@ def test_in_memory_vector_store_retrieval():
 
 def test_context_builder_formatting():
     """Verify context builder outputs formatted markdown and system instructions."""
-    store = InMemoryHybridVectorStore()
+    # A one-chunk index has a much lower IDF (hence lower BM25 scores) than the
+    # real ~140-chunk knowledge base the production default is tuned against,
+    # so use an explicit low threshold here rather than depend on that tuning.
+    store = InMemoryBM25VectorStore(relevance_threshold=0.1)
     chunk = DocumentChunk(
         chunk_id="chunk-1",
         source="guide.md",

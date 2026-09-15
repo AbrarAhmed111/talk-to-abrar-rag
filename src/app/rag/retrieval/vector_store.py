@@ -1,7 +1,8 @@
 """
-Vector Store and Hybrid Retrieval Engine.
-Provides an out-of-the-box in-memory hybrid search index with pluggable extension points
-for production vector databases (PostgreSQL + pgvector, Chroma, Pinecone, Qdrant).
+Vector Store and Retrieval Engine.
+Provides an out-of-the-box in-memory BM25 (keyword/lexical) search index with
+pluggable extension points for production vector databases
+(PostgreSQL + pgvector, Chroma, Pinecone, Qdrant) or an embeddings-based store.
 """
 
 import math
@@ -12,6 +13,22 @@ from collections import Counter
 from src.app.schemas.rag import DocumentChunk, RetrievalResult
 
 logger = logging.getLogger("RAGRetriever")
+
+# Common English filler words carry little topical signal but still add up
+# in BM25's score, especially against short chunks (e.g. FAQ answers phrased
+# as questions like "Does he do full-time roles?") where a few overlapping
+# filler words with the query can outweigh the one real keyword match.
+STOPWORDS = {
+    "a", "an", "the", "and", "or", "but", "if", "so", "of", "in", "on", "for",
+    "to", "with", "about", "into", "at", "by", "from", "is", "are", "was",
+    "were", "be", "been", "being", "do", "does", "did", "has", "have", "had",
+    "he", "she", "it", "they", "his", "her", "him", "them", "their", "what",
+    "who", "how", "why", "which", "when", "where", "this", "that", "these",
+    "those", "you", "your", "can", "will", "would", "should", "could", "as",
+    # The corpus is entirely about one person, so his name carries no
+    # discriminative signal between chunks (it appears almost everywhere).
+    "abrar", "ahmed",
+}
 
 
 class BaseVectorStore(ABC):
@@ -28,11 +45,15 @@ class BaseVectorStore(ABC):
         pass
 
 
-class InMemoryHybridVectorStore(BaseVectorStore):
+class InMemoryBM25VectorStore(BaseVectorStore):
     """
-    Default lightweight in-memory hybrid vector store.
-    Combines TF-IDF / BM25 term weighting and vector cosine similarity
-    without requiring external database setup or paid embedding API calls.
+    Default lightweight in-memory BM25 (keyword/lexical) search store.
+    Scores chunks by BM25 term weighting alone — no embeddings or vector
+    similarity are computed. For a small, hand-curated knowledge base this is
+    a zero-cost, fully deterministic retrieval strategy that needs no external
+    API calls. It does not do semantic/paraphrase matching, so a future
+    embeddings-based store (see EXTENSION GUIDE) could combine BM25 with
+    cosine similarity for a true hybrid search if that's ever needed.
 
     EXTENSION GUIDE:
     To swap in pgvector:
@@ -41,7 +62,16 @@ class InMemoryHybridVectorStore(BaseVectorStore):
     3. Implement `search` with `SELECT ... ORDER BY embedding <=> query_embedding LIMIT top_k`.
     """
 
-    def __init__(self, relevance_threshold: float = 0.08):
+    def __init__(self, relevance_threshold: float = 1.0):
+        # Tuned against the Phase 3 eval set (scripts/eval_retrieval.py): raw
+        # BM25 scores here range roughly 4.5-30+ for genuine matches and 0 for
+        # queries with zero term overlap, so 1.0 comfortably separates "no
+        # overlap at all" from a real match without rejecting a weak-but-real
+        # one. It's a floor, not a topic filter — a query with an incidental
+        # word overlap can still score a few points (e.g. a personal-life
+        # question that happens to share a word with the corpus), so it's not
+        # relied on to enforce the privacy boundary; that's a system-prompt
+        # instruction (Phase 6), not a retrieval-time score cutoff.
         self.chunks: List[DocumentChunk] = []
         self.doc_freqs: Counter = Counter()
         self.chunk_term_counts: List[Counter] = []
@@ -51,10 +81,10 @@ class InMemoryHybridVectorStore(BaseVectorStore):
         self.relevance_threshold = relevance_threshold
 
     def _tokenize(self, text: str) -> List[str]:
-        """Simple alphanumeric tokenizer and lowercaser."""
+        """Simple alphanumeric tokenizer, lowercaser, and stopword filter."""
         import re
         tokens = re.findall(r"\b[a-zA-Z0-9_-]{2,}\b", text.lower())
-        return tokens
+        return [t for t in tokens if t not in STOPWORDS]
 
     def add_chunks(self, chunks: List[DocumentChunk]) -> None:
         """Indexes chunks in memory."""

@@ -29,8 +29,7 @@ Designed to be your production-ready foundation for **RAG-powered AI application
 ### 🔍 RAG Pipeline (Retrieval-Augmented Generation)
 - **Document Ingestion** - Load and process various document formats (Markdown, PDFs, etc.)
 - **Intelligent Chunking** - Smart text splitting with configurable chunk sizes and overlap
-- **Vector Embeddings** - Generate semantic embeddings for documents (OpenAI, local models)
-- **Hybrid Vector Store** - In-memory vector database with semantic + BM25 hybrid search
+- **BM25 Vector Store** - In-memory keyword/lexical search index (no embeddings required for v1)
 - **Context Retrieval** - Efficient similarity search with relevance scoring
 - **Grounded Response Assembly** - Automatically inject retrieved context into LLM prompts
 
@@ -121,7 +120,7 @@ src/
 │   │   ├── chunking/
 │   │   │   └── text_splitter.py      # Smart text chunking
 │   │   ├── retrieval/
-│   │   │   └── vector_store.py       # Vector DB & hybrid search
+│   │   │   └── vector_store.py       # BM25 keyword search index
 │   │   └── context/
 │   │       └── builder.py            # Context formatting for LLM
 │   │
@@ -165,7 +164,7 @@ src/
 | **RAG Pipeline** | End-to-end retrieval + generation | Modular, chainable stages |
 | **Intent Detector** | Route before RAG | Zero-LLM, offline rule-based |
 | **LLM Gateway** | Provider abstraction | Multi-provider with failover |
-| **Vector Store** | Efficient retrieval | Hybrid (semantic + BM25) |
+| **Vector Store** | Efficient retrieval | In-memory BM25 (keyword/lexical) |
 | **Chat Service** | Orchestration | Combines intent → RAG → LLM |
 
 ---
@@ -386,9 +385,9 @@ chunks = splitter.split_documents(documents)
 
 ### 3. **Vector Storage**
 ```python
-from src.app.rag.retrieval.vector_store import InMemoryHybridVectorStore
+from src.app.rag.retrieval.vector_store import InMemoryBM25VectorStore
 
-vector_store = InMemoryHybridVectorStore()
+vector_store = InMemoryBM25VectorStore()
 vector_store.add_documents(chunks)
 ```
 
