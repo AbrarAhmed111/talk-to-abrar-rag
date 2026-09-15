@@ -11,6 +11,7 @@ from src.app.core.config import get_settings
 from src.app.core.logging import setup_logging
 from src.app.api.router import api_router
 from src.app.api.routes.health import router as health_router
+from src.app.services.chat_service import rag_pipeline
 
 settings = get_settings()
 setup_logging(settings.LOG_LEVEL)
@@ -19,6 +20,7 @@ setup_logging(settings.LOG_LEVEL)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifecycle management for the LLM gateway service."""
+    rag_pipeline.initialize()
     yield
 
 

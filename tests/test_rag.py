@@ -85,8 +85,7 @@ def test_context_builder_formatting():
     retrieval_res = store.search(query="serverless compute functions", top_k=1)
     context_block = ContextBuilder.format_context_block(retrieval_res)
 
-    assert "[RETRIEVED DOCUMENTATION CONTEXT]" in context_block
-    assert "[guide.md]" in context_block
+    assert "[BACKGROUND KNOWLEDGE]" in context_block
     assert "Serverless Compute" in context_block
     assert "Deploy stateless functions" in context_block
 
@@ -106,7 +105,7 @@ def test_rag_pipeline_end_to_end():
     assert pipeline.is_initialized is True
 
     prompt, sources = pipeline.build_prompt_context("How do I authenticate API requests?")
-    assert "AI Knowledge Assistant" in prompt
-    assert "[RETRIEVED DOCUMENTATION CONTEXT]" in prompt
+    assert "Abrar's Reflection" in prompt
+    assert "[BACKGROUND KNOWLEDGE]" in prompt
     assert len(sources) >= 1
 

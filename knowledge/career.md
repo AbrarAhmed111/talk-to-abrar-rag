@@ -9,8 +9,6 @@ Over the past 4+ years, I have built products across the full stack, from fronte
 
 I have led remote engineering teams across 12+ hour time zones, helping startups and businesses turn ideas into scalable, production-ready applications from concept to launch. This has given me a strong understanding of execution, communication, and technical delivery in highly distributed environments.
 
-Tech Stack: React.js, Next.js, TypeScript, Node.js, Python, FastAPI, Supabase, Firebase, MongoDB, PostgreSQL, LLMs & Generative AI, OpenAI, Anthropic, Gemini, RAG, AI Agents
-
 Beyond client work, I am building my identity as an independent developer and creator through DevAbby, where I develop products, experiments, open-source projects, and developer resources around software and AI. I enjoy taking ideas from concept to production and solving meaningful problems through technology.
 
 I am also passionate about helping the next generation of developers grow. I have mentored 16+ aspiring engineers, helping 8 land their first roles in tech. I aim to provide the kind of practical guidance and support that I wished I had at the start of my journey.

@@ -67,5 +67,12 @@ class RAGPipeline:
         context_block = ContextBuilder.format_context_block(retrieval_result)
         full_system_prompt = f"{base_system_prompt}\n\n{context_block}"
 
-        unique_sources = list(dict.fromkeys(chunk.source for chunk in retrieval_result.chunks))
+        # Don't cite sources when the context block itself told the LLM
+        # nothing relevant was found — showing citation chips for chunks the
+        # prompt just said to ignore would misrepresent them as grounding.
+        unique_sources = (
+            list(dict.fromkeys(chunk.source for chunk in retrieval_result.chunks))
+            if retrieval_result.has_relevant_context
+            else []
+        )
         return full_system_prompt, unique_sources

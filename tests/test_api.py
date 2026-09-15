@@ -86,7 +86,7 @@ async def test_chat_stream_conversational_canned():
 
 @pytest.mark.asyncio
 async def test_chat_domain_query_via_gateway():
-    """Test POST /api/chat with a technical query routes directly to the gateway without document retrieval."""
+    """Test POST /api/chat with a technical query retrieves RAG context and routes through the gateway."""
     mock_return = (
         "Apex Cloud API requests are authenticated by passing your API key in the Authorization header.",
         "Primary Mock Provider",
@@ -106,5 +106,5 @@ async def test_chat_domain_query_via_gateway():
             assert data["provider"] == "Primary Mock Provider"
             assert data["model"] == "mock-model"
             assert data["usage"]["total_tokens"] == 60
-            assert data["sources"] == []
+            assert isinstance(data["sources"], list)
             mock_gen.assert_called_once()

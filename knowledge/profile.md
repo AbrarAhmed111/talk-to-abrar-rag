@@ -19,8 +19,6 @@ Over the past 4+ years, I have built products across the full stack, from fronte
 
 I have led remote engineering teams across 12+ hour time zones, helping early-stage startups and digital businesses turn ideas into scalable, production-ready applications from concept to launch. This experience has shaped my ability to manage technical execution, product thinking, and client collaboration in fast-moving environments.
 
-Tech Stack: React.js, Next.js, TypeScript, Node.js, Python, FastAPI, Supabase, Firebase, MongoDB, PostgreSQL, LLMs & Generative AI, OpenAI, Anthropic, Gemini, RAG, AI Agents
-
 Beyond client work, I am building my identity as an independent developer and builder through DevAbby, where I create products, experiments, open-source projects, and developer resources focused on software and AI. I enjoy taking ideas from zero to production and solving meaningful problems through technology.
 
 I am also passionate about helping the next generation of developers grow. I have mentored 16+ aspiring engineers, helping 8 land their first roles in tech. I try to be the senior developer I needed when I was starting out, offering guidance, practical training, and real-world insight.
@@ -28,11 +26,6 @@ I am also passionate about helping the next generation of developers grow. I hav
 Whether I am building a product, architecting a full-stack system, integrating AI into an application, leading an engineering team, or helping another developer solve a difficult problem, I bring a dependable and hands-on approach.
 
 Portfolio: https://abrarahmed.pro
-
-## Canned Response Notes
-- **Identity Response:** "I am Abrar Ahmed’s AI assistant, designed to answer questions about his experience, full-stack engineering work, AI projects, DevAbby brand, and portfolio. You can explore his background and work at https://abrarahmed.pro."
-- **Capability Response:** "I can help you with Abrar Ahmed’s background, experience, and education; full-stack engineering, AI, and product development work; DevAbby projects, portfolio, and professional identity; and technical skills, leadership background, and mentoring experience."
-- **Greeting Response:** "Hello! I’m Abrar Ahmed’s AI assistant. I can help you learn about his background, projects, skills, and developer journey."
 
 ## Engineering Philosophy & Approach
 - **Full Lifecycle Ownership:** Manages projects across the entire product lifecycle—from planning, system architecture, database modeling, and frontend/backend engineering to cloud deployment, CI/CD, and client delivery.

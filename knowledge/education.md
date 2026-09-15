@@ -1,13 +1,14 @@
 # Education & Academic Background
 
 ## Formal Education
-- **Degree / Field of Study:** Computer Science Degree (Bachelor of Science in Computer Science)
+- **Degree / Field of Study:** Bachelor of Science in Computer Science (BSCS)
+- **Status:** Graduated — degree completed
 - **Institution:** SZABIST (Shaheed Zulfikar Ali Bhutto Institute of Science and Technology), Islamabad Campus
-- **Timeline / Duration:** 2022 – 2026
+- **Timeline / Duration:** 2022 – 2026 (completed)
 - **Academic Focus:** Computer Science fundamentals, software engineering, database systems, data structures, object-oriented programming (C++), algorithms, and web application architecture.
 
-## SZABIST — BSCS (2022–2026)
-I completed my Bachelor of Science in Computer Science at SZABIST, Islamabad, from 2022 to 2026 while working in software engineering alongside my studies. This period combined academic learning with hands-on professional experience, allowing me to study core computer science subjects while actively building real-world products and contributing to client work.
+## SZABIST — BSCS (2022–2026, Graduated)
+I completed my Bachelor of Science in Computer Science at SZABIST, Islamabad, graduating in 2026 after studying from 2022 while working in software engineering alongside my studies. This period combined academic learning with hands-on professional experience, allowing me to study core computer science subjects while actively building real-world products and contributing to client work.
 
 The experience strengthened my discipline, time management, and ability to perform under pressure. I maintained strong academic performance in programming and technical subjects while also working on production applications, leading development efforts, and mentoring aspiring developers. Balancing university responsibilities with industry exposure helped shape my technical foundation, leadership mindset, and practical problem-solving ability.
 

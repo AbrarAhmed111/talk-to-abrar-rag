@@ -25,9 +25,11 @@ STOPWORDS = {
     "he", "she", "it", "they", "his", "her", "him", "them", "their", "what",
     "who", "how", "why", "which", "when", "where", "this", "that", "these",
     "those", "you", "your", "can", "will", "would", "should", "could", "as",
-    # The corpus is entirely about one person, so his name carries no
-    # discriminative signal between chunks (it appears almost everywhere).
-    "abrar", "ahmed",
+    # Conversational filler ("tell me about X", "let me know", "please give
+    # me") that otherwise incidentally matches the first-person narrative
+    # prose used throughout the knowledge base (e.g. "...shaped me into the
+    # engineer I am today"), pulling in unrelated chunks for no topical reason.
+    "tell", "me", "please", "know", "give", "get", "want",
 }
 
 
@@ -61,6 +63,17 @@ class InMemoryBM25VectorStore(BaseVectorStore):
     2. Implement `add_chunks` to insert embeddings into your PostgreSQL table.
     3. Implement `search` with `SELECT ... ORDER BY embedding <=> query_embedding LIMIT top_k`.
     """
+
+    # profile.md is the one file that answers generic identity questions
+    # ("Who is Abrar?", "Tell me about him") — but those queries carry almost
+    # no distinguishing keyword signal (the corpus mentions his name
+    # everywhere), so plain BM25 often ranks a weaker incidental match above
+    # it. A small deterministic boost (tuned empirically — 1.6x already
+    # overpowered dedicated matches like devabby.md's own "What is DevAbby?"
+    # chunk; 1.2x fixes identity queries without disturbing anything else)
+    # nudges it back to the top for exactly that narrow case.
+    PROFILE_SOURCE = "profile.md"
+    PROFILE_BOOST = 1.2
 
     def __init__(self, relevance_threshold: float = 1.0):
         # Tuned against the Phase 3 eval set (scripts/eval_retrieval.py): raw
@@ -133,6 +146,9 @@ class InMemoryBM25VectorStore(BaseVectorStore):
                     num = tf * (k1 + 1.0)
                     den = tf + k1 * (1.0 - b + b * (doc_len / self.avg_doc_len))
                     doc_score += idf * (num / den)
+
+            if self.chunks[idx].source == self.PROFILE_SOURCE:
+                doc_score *= self.PROFILE_BOOST
 
             scores.append((idx, doc_score))
 

@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     ALLOWED_ORIGINS: str = "http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000,http://127.0.0.1:3000"
 
     # Assistant Identity
-    ASSISTANT_NAME: str = "AI Knowledge Assistant"
+    ASSISTANT_NAME: str = "Abrar's Reflection"
 
     # RAG Knowledge Base Configuration
     KNOWLEDGE_BASE_PATH: str = "knowledge"

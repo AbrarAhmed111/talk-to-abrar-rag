@@ -25,6 +25,7 @@ from src.app.schemas.chat import (
 from src.app.gateway import LLMGateway
 from src.app.intent import detect_intent, get_canned_response
 from src.app.core.config import get_settings
+from src.app.rag.pipeline import RAGPipeline
 
 logger = logging.getLogger("ChatService")
 settings = get_settings()
@@ -33,6 +34,14 @@ settings = get_settings()
 gateway = LLMGateway(
     max_attempts=settings.GATEWAY_MAX_ATTEMPTS,
     cooldown_seconds=settings.GATEWAY_COOLDOWN_SECONDS,
+)
+
+# Initialize the RAG pipeline instance (indexed at app startup, see main.py's lifespan)
+rag_pipeline = RAGPipeline(
+    knowledge_dir=settings.resolved_knowledge_path,
+    top_k=settings.RAG_TOP_K,
+    chunk_size=settings.RAG_CHUNK_SIZE,
+    chunk_overlap=settings.RAG_CHUNK_OVERLAP,
 )
 
 # Generic Starter Fast Prompts for Chatbot UI
@@ -124,15 +133,12 @@ class ChatService:
                 status_events=[],
             )
 
-        # 2. Substantive Query -> Direct LLM Gateway (no document retrieval)
+        # 2. Substantive Query -> Retrieve grounding context, then the LLM Gateway
         logger.info(
-            f"🔍 [INTENT DETECTED: '{intent_result.intent}'] -> Routing directly to the LLM Gateway..."
+            f"🔍 [INTENT DETECTED: '{intent_result.intent}'] -> Retrieving RAG context..."
         )
 
-        system_prompt = (
-            "You are a helpful AI assistant. Answer the user's request clearly and concisely. "
-            "Do not depend on local document retrieval or knowledge files. Use the current conversation context and your model capabilities."
-        )
+        system_prompt, sources = rag_pipeline.build_prompt_context(latest_user_content)
 
         langchain_messages: List[BaseMessage] = [SystemMessage(content=system_prompt)]
         for m in clean_messages:
@@ -156,7 +162,7 @@ class ChatService:
             model=model_name,
             usage=UsageInfo(**usage),
             intent=intent_result.intent,
-            sources=[],
+            sources=sources,
             status_events=[
                 ProviderStatusEventSchema(
                     type=ev.type,
@@ -195,10 +201,7 @@ class ChatService:
             }
             return
 
-        system_prompt = (
-            "You are a helpful AI assistant. Answer the user's request directly and clearly. "
-            "Do not depend on local knowledge files or document retrieval."
-        )
+        system_prompt, sources = rag_pipeline.build_prompt_context(latest_user_content)
         langchain_messages: List[BaseMessage] = [SystemMessage(content=system_prompt)]
         for message in clean_messages:
             if message.role != "system":
@@ -211,7 +214,7 @@ class ChatService:
         ):
             if event["type"] == "done":
                 event["intent"] = intent_result.intent
-                event["sources"] = []
+                event["sources"] = sources
             yield event
 
 
