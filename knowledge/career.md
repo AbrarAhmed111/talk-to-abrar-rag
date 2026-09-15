@@ -36,6 +36,7 @@ Portfolio: https://abrarahmed.pro
   - Improved system performance and security, reducing load times and increasing platform reliability.
   - Oversaw and maintained production deployments, managed CI/CD pipelines, and maintained version-control workflows.
   - Conducted regular code reviews and introduced development standards to improve team efficiency.
+  - **Engagement Status:** Concluded in Apr 2026. Abrar has since transitioned to working full-time as an independent freelancer/contractor — see `faq.md` for current availability and how to get in touch.
 
 ---
 
