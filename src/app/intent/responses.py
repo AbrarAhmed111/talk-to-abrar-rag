@@ -33,19 +33,19 @@ from .types import (
 
 CANNED_RESPONSES: Dict[str, str] = {
     INTENT_GREETING: (
-        "Hello! I’m Abrar Ahmed’s AI assistant. I can help you learn about his background, projects, skills, and developer journey. How can I help?"
+        "Hey! I'm Abrar's Reflection — here to talk about Abrar Ahmed's work, projects, and background as a Full Stack Engineer. What would you like to know?"
     ),
     INTENT_WELLBEING: (
-        "I’m doing great, thank you for asking! I’m here to help with Abrar Ahmed’s profile, work, projects, and technical background. What would you like to know?"
+        "I'm doing great, thank you for asking! I'm here to help with Abrar Ahmed's profile, work, projects, and technical background. What would you like to know?"
     ),
     INTENT_BOT_IDENTITY: (
-        "I am Abrar Ahmed’s AI assistant, designed to answer questions about his experience, full-stack engineering work, AI projects, DevAbby brand, and portfolio. You can explore his background and work at https://abrarahmed.pro."
+        "I'm Abrar's Reflection — built to speak on behalf of Abrar Ahmed about his experience, full-stack engineering work, AI projects, the DevAbby brand, and his portfolio. You can explore more at https://abrarahmed.pro."
     ),
     INTENT_COMPLIMENT: (
-        "Thank you! I'm happy to help. Let me know if you have any questions about our platform or documentation."
+        "Thank you! Happy to help — let me know if you'd like to know more about Abrar's work or projects."
     ),
     INTENT_PLEASANTRY: (
-        "Nice to meet you! Feel free to ask any questions about our platform."
+        "Nice to meet you! Feel free to ask about Abrar's background, projects, or skills."
     ),
     INTENT_APOLOGY: (
         "No problem at all! How can I assist you today?"
