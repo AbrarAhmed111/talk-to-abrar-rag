@@ -19,7 +19,7 @@ setup_logging(settings.LOG_LEVEL)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Application lifecycle management for the LLM gateway service."""
+    """Application lifecycle management: indexes the RAG knowledge base once at startup."""
     rag_pipeline.initialize()
     yield
 
@@ -27,7 +27,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title=settings.APP_NAME,
     version="1.0.0",
-    description="Production-ready LLM gateway starter with multi-provider failover and intent routing.",
+    description="RAG backend for Abrar's Reflection — a grounded chatbot answering visitor questions about Abrar Ahmed's career, projects, and skills, with multi-provider LLM failover.",
     lifespan=lifespan,
 )
 
@@ -58,7 +58,7 @@ async def root():
         "docs": "/docs",
         "endpoints": {
             "chat": "/api/chat",
-            "fast_prompts": "/api/chat/fast-prompts",
+            "chat_stream": "/api/chat/stream",
             "health": "/health",
         },
     }

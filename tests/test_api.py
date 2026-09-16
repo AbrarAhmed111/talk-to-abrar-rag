@@ -1,6 +1,6 @@
 """
-API Integration Tests for LLM RAG Starter.
-Tests /health, /api/chat, /api/chat/fast-prompts, and CORS headers.
+API Integration Tests for Abrar's Reflection RAG backend.
+Tests /health, /api/chat, and /api/chat/stream.
 Completely mocked (zero tokens consumed).
 """
 
@@ -40,21 +40,6 @@ async def test_health():
         assert data["knowledge_index"]["disabled"] is False
         assert data["knowledge_index"]["indexed_chunks"] > 0
         assert "gateway" in data
-
-
-@pytest.mark.asyncio
-async def test_get_fast_prompts():
-    """Test GET /api/chat/fast-prompts endpoint."""
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        response = await client.get("/api/chat/fast-prompts")
-        assert response.status_code == 200
-        data = response.json()
-        assert "prompts" in data
-        assert len(data["prompts"]) >= 3
-        for p in data["prompts"]:
-            assert "label" in p
-            assert "prompt" in p
-            assert "category" in p
 
 
 @pytest.mark.asyncio

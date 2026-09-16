@@ -1,7 +1,7 @@
 [project]
-name = "llm-rag-starter"
+name = "abrars-reflection-backend"
 version = "1.0.0"
-description = "A production-oriented, domain-agnostic LLM and RAG starter template with multi-provider failover, rule-based intent routing, and grounded retrieval."
+description = "RAG backend for Abrar's Reflection: a grounded chatbot answering visitor questions about Abrar Ahmed's career, projects, and skills, with multi-provider LLM failover and rule-based intent routing."
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"

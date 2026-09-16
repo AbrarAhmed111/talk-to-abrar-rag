@@ -12,14 +12,14 @@ class Settings(BaseSettings):
     """Global configuration settings."""
 
     # Application
-    APP_NAME: str = "LLM RAG Starter"
+    APP_NAME: str = "Abrar's Reflection API"
     ENVIRONMENT: str = "development"
     LOG_LEVEL: str = "INFO"
     HOST: str = "0.0.0.0"
     PORT: int = 8000
 
     # CORS Whitelist (comma-separated strings)
-    ALLOWED_ORIGINS: str = "http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000,http://127.0.0.1:3000"
+    ALLOWED_ORIGINS: str = "http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000,http://127.0.0.1:3000,https://www.abrarahmed.pro"
 
     # Assistant Identity
     ASSISTANT_NAME: str = "Abrar's Reflection"

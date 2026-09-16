@@ -1,4 +1,4 @@
-"""LLM RAG Starter Application Package."""
+"""Abrar's Reflection RAG backend application package."""
 
 import sys
 from pathlib import Path

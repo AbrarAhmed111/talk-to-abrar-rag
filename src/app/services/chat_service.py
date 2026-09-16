@@ -19,8 +19,6 @@ from src.app.schemas.chat import (
     ChatResponse,
     UsageInfo,
     ProviderStatusEventSchema,
-    FastPrompt,
-    FastPromptsResponse,
 )
 from src.app.gateway import LLMGateway
 from src.app.intent import detect_intent, get_canned_response
@@ -44,36 +42,6 @@ rag_pipeline = RAGPipeline(
     chunk_overlap=settings.RAG_CHUNK_OVERLAP,
 )
 
-# Generic Starter Fast Prompts for Chatbot UI
-DEFAULT_FAST_PROMPTS: List[FastPrompt] = [
-    FastPrompt(
-        label="Platform Overview",
-        prompt="What is this platform and what are its key capabilities?",
-        category="General",
-    ),
-    FastPrompt(
-        label="API Authentication",
-        prompt="How do I authenticate HTTP requests to the API?",
-        category="Technical",
-    ),
-    FastPrompt(
-        label="Subscription Tiers",
-        prompt="What subscription plans and pricing tiers are available?",
-        category="Billing",
-    ),
-    FastPrompt(
-        label="Rate Limiting",
-        prompt="What are the API rate limits and how does the system handle 429 errors?",
-        category="Technical",
-    ),
-    FastPrompt(
-        label="Webhook Alerts",
-        prompt="How do I configure webhook alerts for monitoring?",
-        category="Technical",
-    ),
-]
-
-
 def to_langchain_message(msg: ChatMessage) -> BaseMessage:
     """Map ChatMessage schema to LangChain message abstractions."""
     if msg.role == "system":
@@ -89,10 +57,6 @@ class ChatService:
 
     def __init__(self, gateway_instance: LLMGateway = gateway):
         self.gateway = gateway_instance
-
-    def get_fast_prompts(self) -> FastPromptsResponse:
-        """Returns product-focused fast prompt suggestions for the chatbot UI."""
-        return FastPromptsResponse(prompts=DEFAULT_FAST_PROMPTS)
 
     async def process_chat(self, request: ChatRequest) -> ChatResponse:
         """

@@ -6,7 +6,7 @@ This folder holds the raw knowledge documents used by the RAG (Retrieval-Augment
 
 ```text
 knowledge/
-├── profile.md               # Identity, contact, canned responses, privacy boundary
+├── profile.md               # Identity, contact, privacy boundary
 ├── career.md                # Employment history & mentorship
 ├── skills.md                # Technical skills & capabilities
 ├── education.md             # Academic background

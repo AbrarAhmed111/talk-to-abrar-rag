@@ -7,18 +7,10 @@ import json
 
 from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import StreamingResponse
-from src.app.schemas.chat import ChatRequest, ChatResponse, FastPromptsResponse
+from src.app.schemas.chat import ChatRequest, ChatResponse
 from src.app.services.chat_service import chat_service
 
 router = APIRouter(prefix="/chat", tags=["Chatbot"])
-
-
-@router.get("/fast-prompts", response_model=FastPromptsResponse, summary="Get Product Fast Prompts")
-async def get_fast_prompts() -> FastPromptsResponse:
-    """
-    Returns curated, product-focused fast prompts / suggestion chips for the chatbot UI.
-    """
-    return chat_service.get_fast_prompts()
 
 
 @router.post("", response_model=ChatResponse, summary="Chat Completion with Intent Detection & Gateway")
