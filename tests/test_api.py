@@ -37,7 +37,8 @@ async def test_health():
         data = response.json()
         assert data["status"] == "healthy"
         assert "knowledge_index" in data
-        assert data["knowledge_index"]["disabled"] is True
+        assert data["knowledge_index"]["disabled"] is False
+        assert data["knowledge_index"]["indexed_chunks"] > 0
         assert "gateway" in data
 
 

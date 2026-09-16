@@ -1,7 +1,7 @@
 import sys
 
-from .chat_service import ChatService, chat_service, gateway
+from .chat_service import ChatService, chat_service, gateway, rag_pipeline
 
 sys.modules.setdefault("app.services", sys.modules[__name__])
 
-__all__ = ["ChatService", "chat_service", "gateway"]
+__all__ = ["ChatService", "chat_service", "gateway", "rag_pipeline"]
